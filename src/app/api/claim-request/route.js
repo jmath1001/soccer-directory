@@ -1,6 +1,6 @@
 // app/api/claim-request/route.js
 import { NextResponse } from 'next/server';
-import { db } from '@/firebase'; // adjust path to your firebase config
+import { db } from '@/firebase/firebaseConfig'; // adjust path to your firebase config
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export async function POST(req) {
