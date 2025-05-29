@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Head from 'next/head';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { db } from '@/firebase/firebaseConfig';
@@ -29,12 +29,9 @@ const fieldSizeOptions = ['Small', 'Medium', 'Large', 'Full-size'];
 
 const formatDate = (date) => date.toISOString().split('T')[0];
 
-const EditField = () => {
+const AddField = () => {
   const router = useRouter();
-  const params = useParams();
-  const id = params?.id;
 
-  const [field, setField] = useState(null);
   const [formData, setFormData] = useState({
     facilityName: '',
     fieldSize: '',
@@ -48,48 +45,8 @@ const EditField = () => {
     websiteURL: '',
   });
   const [imageURLs, setImageURLs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
-
-  useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchField = async () => {
-      try {
-        const fieldDocRef = doc(db, 'rentalFields', id);
-        const fieldDoc = await getDoc(fieldDocRef);
-        if (fieldDoc.exists()) {
-          const fieldData = fieldDoc.data();
-          setField(fieldData);
-          setFormData({
-            facilityName: fieldData.facilityName || '',
-            fieldSize: fieldData.fieldSize || '',
-            fieldSurface: fieldData.fieldSurface || '',
-            indoor_outdoor: fieldData.indoor_outdoor || '',
-            location: fieldData.location || '',
-            price_per_hour: fieldData.price_per_hour || '',
-            openHours: fieldData.openHours || {},
-            availability: fieldData.availability || {},
-            phoneNumber: fieldData.phoneNumber || '',
-            websiteURL: fieldData.websiteURL || '',
-          });
-          setImageURLs(fieldData.imageURLs || []);
-        } else {
-          alert('Field not found.');
-          router.push('/');
-        }
-      } catch (error) {
-        console.error('Error fetching field:', error);
-        alert('Failed to load field data.');
-      }
-      setLoading(false);
-    };
-
-    fetchField();
-  }, [id, router]);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -155,32 +112,35 @@ const EditField = () => {
       return;
     }
 
+    setLoading(true);
+
     try {
-      const fieldRef = doc(db, 'rentalFields', id);
+      // Generate a new doc ref with random ID
+      const newFieldRef = doc(collection(db, 'rentalFields'));
 
-      let coordinates = { latitude: field?.latitude, longitude: field?.longitude };
-
-      if (formData.location !== field?.location) {
-        const geoResult = await geocodeAddress(formData.location);
-        if (!geoResult) {
-          alert('Could not geocode the new location. Please enter a valid address.');
-          return;
-        }
-        coordinates = geoResult;
+      // Geocode location
+      const geoResult = await geocodeAddress(formData.location);
+      if (!geoResult) {
+        alert('Could not geocode the location. Please enter a valid address.');
+        setLoading(false);
+        return;
       }
 
-      await updateDoc(fieldRef, {
+      // Save new field data
+      await setDoc(newFieldRef, {
         ...formData,
         imageURLs,
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
+        latitude: geoResult.latitude,
+        longitude: geoResult.longitude,
       });
 
-      alert('Field updated successfully!');
-      router.push(`/field/${id}`);
+      alert('Field added successfully!');
+      router.push(`/field/${newFieldRef.id}`);
     } catch (error) {
-      console.error('Error updating field:', error);
-      alert('There was a problem updating the field. Please try again.');
+      console.error('Error adding field:', error);
+      alert('There was a problem adding the field. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,9 +149,9 @@ const EditField = () => {
   return (
     <>
       <Head>
-        <title>Edit Soccer Field | SoccerDiscovery</title>
-        <meta name="description" content="Edit soccer field details, availability, and images." />
-        <meta name="robots" content="index, follow" />
+        <title>Add Soccer Field | SoccerDiscovery</title>
+        <meta name="description" content="Add a new soccer field with details, availability, and images." />
+        <meta name="robots" content="noindex, nofollow" />
       </Head>
 
       <div className="container mx-auto p-4 max-w-xl bg-white shadow-lg rounded-lg relative mt-16">
@@ -215,7 +175,7 @@ const EditField = () => {
           <span>Back</span>
         </button>
 
-        <h1 className="text-4xl font-extrabold mb-8 text-gray-800 text-center">Edit Field</h1>
+        <h1 className="text-4xl font-extrabold mb-8 text-gray-800 text-center">Add New Field</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Facility Name */}
@@ -286,7 +246,7 @@ const EditField = () => {
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select one</option>
-                {fieldSurfaceOptions.map((option) => (
+                                {fieldSurfaceOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -315,7 +275,7 @@ const EditField = () => {
             </div>
           </div>
 
-          {/* Price per hour */}
+          {/* Price Per Hour */}
           <div>
             <label htmlFor="price_per_hour" className="block text-gray-700 font-semibold mb-2">
               Price per Hour (USD)
@@ -324,13 +284,67 @@ const EditField = () => {
               id="price_per_hour"
               name="price_per_hour"
               type="number"
-              value={formData.price_per_hour}
-              onChange={handleChange}
-              placeholder="Enter price per hour"
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               min="0"
               step="0.01"
+              value={formData.price_per_hour}
+              onChange={handleChange}
+              placeholder="e.g. 25.00"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+          {/* Open Hours (simple inputs for each day) */}
+          <div>
+            <h2 className="font-semibold mb-2 text-gray-700">Open Hours</h2>
+            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+              <div key={day} className="mb-2">
+                <label htmlFor={`openHours-${day}`} className="block text-gray-600">
+                  {day} (e.g., 8:00 AM - 9:00 PM)
+                </label>
+                <input
+                  id={`openHours-${day}`}
+                  name={day}
+                  type="text"
+                  value={formData.openHours[day] || ''}
+                  onChange={(e) => handleOpenHoursChange(e, day)}
+                  placeholder="Closed if empty"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Availability Date Picker and Time Slots */}
+          <div>
+            <h2 className="font-semibold mb-2 text-gray-700">Availability</h2>
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              placeholderText="Select a date to add time slots"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              minDate={new Date()}
+              dateFormat="yyyy-MM-dd"
+            />
+            {selectedDate && (
+              <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {TIME_SLOTS.map((slot) => {
+                  const dateKey = formatDate(selectedDate);
+                  const isSelected = formData.availability[dateKey]?.includes(slot);
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => toggleTimeSlot(slot)}
+                      className={`p-2 rounded-md border ${
+                        isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Phone Number */}
@@ -344,7 +358,7 @@ const EditField = () => {
               type="tel"
               value={formData.phoneNumber}
               onChange={handleChange}
-              placeholder="Enter phone number"
+              placeholder="e.g. (123) 456-7890"
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -365,37 +379,26 @@ const EditField = () => {
             />
           </div>
 
-          {/* Open Hours */}
+          {/* Image Upload */}
           <div>
-            <h2 className="text-xl font-semibold mb-2">Open Hours</h2>
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(
-              (day) => (
-                <div key={day} className="mb-2">
-                  <label className="block text-gray-700 font-medium">{day}</label>
-                  <input
-                    type="text"
-                    name={day}
-                    value={formData.openHours[day] || ''}
-                    onChange={(e) => handleOpenHoursChange(e, day)}
-                    placeholder="e.g. 8 AM - 9 PM"
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              ),
-            )}
-          </div>
-
-          {/* Images */}
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Images</h2>
-            <div className="flex flex-wrap gap-4 mb-4">
+            <label htmlFor="imageUpload" className="block text-gray-700 font-semibold mb-2">
+              Upload Images
+            </label>
+            <input
+              id="imageUpload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="mb-3"
+            />
+            <div className="flex flex-wrap gap-3">
               {imageURLs.map((url, idx) => (
-                <div key={idx} className="relative w-32 h-24 rounded overflow-hidden border border-gray-300">
-                  <img src={url} alt={`Field image ${idx + 1}`} className="object-cover w-full h-full" />
+                <div key={idx} className="relative w-24 h-24 border rounded-md overflow-hidden">
+                  <img src={url} alt={`Field image ${idx + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700"
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-800"
                     aria-label="Remove image"
                   >
                     &times;
@@ -403,71 +406,15 @@ const EditField = () => {
                 </div>
               ))}
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="block"
-              aria-label="Upload field image"
-            />
           </div>
 
-          {/* Availability */}
+          {/* Submit Button */}
           <div>
-            <h2 className="text-xl font-semibold mb-2">Availability</h2>
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
-              inline
-              minDate={new Date()}
-              aria-label="Select date for availability"
-            />
-
-            {selectedDate && (
-              <div className="mt-4">
-                <h3 className="font-semibold mb-2">
-                  Select time slots for {formatDate(selectedDate)}
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {TIME_SLOTS.map((slot) => {
-                    const dateKey = formatDate(selectedDate);
-                    const isSelected =
-                      formData.availability[dateKey]?.includes(slot) ?? false;
-
-                    return (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => toggleTimeSlot(slot)}
-                        className={`p-2 rounded border ${
-                          isSelected
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-gray-700 border-gray-300'
-                        } hover:bg-blue-500 hover:text-white`}
-                      >
-                        {slot}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Buttons */}
-          <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-            >
-              Cancel
-            </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors"
             >
-              Save Changes
+              Add Field
             </button>
           </div>
         </form>
@@ -476,4 +423,4 @@ const EditField = () => {
   );
 };
 
-export default EditField;
+export default AddField;
