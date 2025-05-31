@@ -1,4 +1,3 @@
-// app/page.js (or pages/index.js in older Next.js versions)
 'use client';
 
 import Head from 'next/head';
@@ -16,12 +15,42 @@ export default function Home() {
         <meta charSet="UTF-8" />
         <meta name="keywords" content="soccer field, book soccer field, indoor soccer, futsal, outdoor soccer" />
         <meta name="author" content="Soccer Discovery Team" />
-        {/* You can add Open Graph tags here for social sharing */}
+
+        {/* Open Graph (Facebook, LinkedIn) */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Find Your Perfect Soccer Field | Soccer Discovery" />
+        <meta property="og:description" content="Discover available soccer fields near you and book your next game easily. Indoor, outdoor, futsal & more!" />
+        <meta property="og:url" content="https://soccer-directory.vercel.app" />
+        <meta property="og:image" content="https://soccer-directory.vercel.app/public/images/hero-image.jpg" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Find Your Perfect Soccer Field | Soccer Discovery" />
+        <meta name="twitter:description" content="Discover available soccer fields near you and book your next game easily." />
+        <meta name="twitter:image" content="https://soccer-directory.vercel.app/public/images/hero-image.jpg" />
+
+        {/* Structured Data for SEO */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SportsActivityLocation",
+            "name": "Soccer Discovery",
+            "url": "https://soccer-directory.vercel.app",
+            "description": "Discover available soccer fields near you and book your next game easily.",
+            "image": "https://soccer-directory.vercel.app/public/images/hero-image.jpg",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "United States",
+              "addressCountry": "US"
+            }
+          })
+        }} />
       </Head>
 
       {/* Full width Hero outside container for edge-to-edge look */}
       <HeroSection />
       <BrowseByCategory />
+
       {/* Main container for rest of content */}
       <main className="max-w-8xl mx-auto px-4 py-8 space-y-16">
         <FeaturedFields />
