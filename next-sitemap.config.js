@@ -1,5 +1,5 @@
 module.exports = {
-  siteUrl: 'https://soccer-directory.vercel.app', // your website URL here
-  generateRobotsTxt: true,            // (optional) generate robots.txt
-  // ...other options you want
+  siteUrl: 'https://soccer-directory.vercel.app',
+  generateRobotsTxt: true,
+  exclude: ['/my-fields', '/edit-field/*', '/rental-field-manage'], // Private routes
 };
