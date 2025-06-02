@@ -38,12 +38,16 @@ const AddField = () => {
     fieldSurface: '',
     indoor_outdoor: '',
     location: '',
+    latitude: '',
+    longitude: '',
     price_per_hour: '',
     openHours: {},
     availability: {},
     phoneNumber: '',
     websiteURL: '',
   });
+
+  const [useLatLong, setUseLatLong] = useState(false); // toggle for manual lat/long input
   const [imageURLs, setImageURLs] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -107,31 +111,59 @@ const AddField = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.facilityName.trim() || !formData.location.trim()) {
-      alert('Facility Name and Location are required.');
+    // Validate facility name
+    if (!formData.facilityName.trim()) {
+      alert('Facility Name is required.');
       return;
+    }
+
+    // Validate location or lat/long input
+    if (!useLatLong) {
+      // Location mode
+      if (!formData.location.trim()) {
+        alert('Please enter a location or switch to manual latitude/longitude input.');
+        return;
+      }
+    } else {
+      // Manual lat/long mode
+      if (
+        formData.latitude.trim() === '' ||
+        formData.longitude.trim() === '' ||
+        isNaN(parseFloat(formData.latitude)) ||
+        isNaN(parseFloat(formData.longitude))
+      ) {
+        alert('Please enter valid latitude and longitude values.');
+        return;
+      }
     }
 
     setLoading(true);
 
     try {
-      // Generate a new doc ref with random ID
       const newFieldRef = doc(collection(db, 'rentalFields'));
 
-      // Geocode location
-      const geoResult = await geocodeAddress(formData.location);
-      if (!geoResult) {
-        alert('Could not geocode the location. Please enter a valid address.');
-        setLoading(false);
-        return;
+      let latitude, longitude;
+
+      if (!useLatLong) {
+        // Geocode location string
+        const geoResult = await geocodeAddress(formData.location);
+        if (!geoResult) {
+          alert('Could not geocode the location. Please enter a valid address.');
+          setLoading(false);
+          return;
+        }
+        latitude = geoResult.latitude;
+        longitude = geoResult.longitude;
+      } else {
+        latitude = parseFloat(formData.latitude);
+        longitude = parseFloat(formData.longitude);
       }
 
-      // Save new field data
       await setDoc(newFieldRef, {
         ...formData,
+        latitude,
+        longitude,
         imageURLs,
-        latitude: geoResult.latitude,
-        longitude: geoResult.longitude,
       });
 
       alert('Field added successfully!');
@@ -195,156 +227,147 @@ const AddField = () => {
             />
           </div>
 
-          {/* Location */}
-          <div>
-            <label htmlFor="location" className="block text-gray-700 font-semibold mb-2">
-              Location <span className="text-red-500">*</span>
+          {/* Toggle Location / LatLong input */}
+          <div className="mb-4">
+            <label className="inline-flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={useLatLong}
+                onChange={() => setUseLatLong((prev) => !prev)}
+                className="form-checkbox"
+              />
+              <span className="text-gray-700">Enter Latitude & Longitude manually (instead of Location)</span>
             </label>
-            <input
-              id="location"
-              name="location"
-              type="text"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="Enter full address"
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
           </div>
 
-          {/* Dropdown selects */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {!useLatLong ? (
             <div>
-              <label htmlFor="indoor_outdoor" className="block text-gray-700 font-semibold mb-2">
-                Indoor or Outdoor
+              <label htmlFor="location" className="block text-gray-700 font-semibold mb-2">
+                Location (optional)
               </label>
-              <select
-                id="indoor_outdoor"
-                name="indoor_outdoor"
-                value={formData.indoor_outdoor}
+              <input
+                id="location"
+                name="location"
+                type="text"
+                value={formData.location}
                 onChange={handleChange}
+                placeholder="Enter full address"
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select one</option>
-                {indoorOutdoorOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="latitude" className="block text-gray-700 font-semibold mb-2">
+                  Latitude
+                </label>
+                <input
+                  id="latitude"
+                  name="latitude"
+                  type="number"
+                  step="any"
+                  value={formData.latitude}
+                  onChange={handleChange}
+                  placeholder="e.g. 34.0522"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label htmlFor="longitude" className="block text-gray-700 font-semibold mb-2">
+                  Longitude
+                </label>
+                <input
+                  id="longitude"
+                  name="longitude"
+                  type="number"
+                  step="any"
+                  value={formData.longitude}
+                  onChange={handleChange}
+                  placeholder="e.g. -118.2437"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
 
-            <div>
-              <label htmlFor="fieldSurface" className="block text-gray-700 font-semibold mb-2">
-                Field Surface
-              </label>
-              <select
-                id="fieldSurface"
-                name="fieldSurface"
-                value={formData.fieldSurface}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select one</option>
-                                {fieldSurfaceOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Field Size */}
+          <div>
+            <label htmlFor="fieldSize" className="block text-gray-700 font-semibold mb-2">
+              Field Size
+            </label>
+            <select
+              id="fieldSize"
+              name="fieldSize"
+              value={formData.fieldSize}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select size</option>
+              {fieldSizeOptions.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div>
-              <label htmlFor="fieldSize" className="block text-gray-700 font-semibold mb-2">
-                Field Size
-              </label>
-              <select
-                id="fieldSize"
-                name="fieldSize"
-                value={formData.fieldSize}
-                onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select one</option>
-                {fieldSizeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Field Surface */}
+          <div>
+            <label htmlFor="fieldSurface" className="block text-gray-700 font-semibold mb-2">
+              Field Surface
+            </label>
+            <select
+              id="fieldSurface"
+              name="fieldSurface"
+              value={formData.fieldSurface}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select surface</option>
+              {fieldSurfaceOptions.map((surface) => (
+                <option key={surface} value={surface}>
+                  {surface}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Indoor/Outdoor */}
+          <div>
+            <label htmlFor="indoor_outdoor" className="block text-gray-700 font-semibold mb-2">
+              Indoor / Outdoor
+            </label>
+            <select
+              id="indoor_outdoor"
+              name="indoor_outdoor"
+              value={formData.indoor_outdoor}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select</option>
+              {indoorOutdoorOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Price Per Hour */}
           <div>
             <label htmlFor="price_per_hour" className="block text-gray-700 font-semibold mb-2">
-              Price per Hour (USD)
+              Price Per Hour ($)
             </label>
             <input
               id="price_per_hour"
               name="price_per_hour"
               type="number"
               min="0"
-              step="0.01"
               value={formData.price_per_hour}
               onChange={handleChange}
-              placeholder="e.g. 25.00"
+              placeholder="0"
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </div>
-
-          {/* Open Hours (simple inputs for each day) */}
-          <div>
-            <h2 className="font-semibold mb-2 text-gray-700">Open Hours</h2>
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-              <div key={day} className="mb-2">
-                <label htmlFor={`openHours-${day}`} className="block text-gray-600">
-                  {day} (e.g., 8:00 AM - 9:00 PM)
-                </label>
-                <input
-                  id={`openHours-${day}`}
-                  name={day}
-                  type="text"
-                  value={formData.openHours[day] || ''}
-                  onChange={(e) => handleOpenHoursChange(e, day)}
-                  placeholder="Closed if empty"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Availability Date Picker and Time Slots */}
-          <div>
-            <h2 className="font-semibold mb-2 text-gray-700">Availability</h2>
-            <DatePicker
-              selected={selectedDate}
-              onChange={(date) => setSelectedDate(date)}
-              placeholderText="Select a date to add time slots"
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              minDate={new Date()}
-              dateFormat="yyyy-MM-dd"
-            />
-            {selectedDate && (
-              <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {TIME_SLOTS.map((slot) => {
-                  const dateKey = formatDate(selectedDate);
-                  const isSelected = formData.availability[dateKey]?.includes(slot);
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => toggleTimeSlot(slot)}
-                      className={`p-2 rounded-md border ${
-                        isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           {/* Phone Number */}
@@ -358,7 +381,7 @@ const AddField = () => {
               type="tel"
               value={formData.phoneNumber}
               onChange={handleChange}
-              placeholder="e.g. (123) 456-7890"
+              placeholder="(optional)"
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -374,34 +397,80 @@ const AddField = () => {
               type="url"
               value={formData.websiteURL}
               onChange={handleChange}
-              placeholder="https://example.com"
+              placeholder="(optional)"
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Image Upload */}
+          {/* Open Hours */}
           <div>
-            <label htmlFor="imageUpload" className="block text-gray-700 font-semibold mb-2">
-              Upload Images
-            </label>
-            <input
-              id="imageUpload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="mb-3"
+            <h2 className="text-xl font-bold mb-3 text-gray-800">Open Hours (optional)</h2>
+            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+              <div key={day} className="mb-2">
+                <label htmlFor={`openHours-${day}`} className="block text-gray-700 font-semibold mb-1">
+                  {day}
+                </label>
+                <input
+                  id={`openHours-${day}`}
+                  name={`openHours-${day}`}
+                  type="text"
+                  placeholder="e.g. 8:00 AM - 9:00 PM"
+                  value={formData.openHours[day] || ''}
+                  onChange={(e) => handleOpenHoursChange(e, day)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Availability */}
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-gray-800">Availability (optional)</h2>
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              placeholderText="Select a date"
+              className="p-3 border border-gray-300 rounded-md w-full mb-3"
+              minDate={new Date()}
+              dateFormat="yyyy-MM-dd"
             />
-            <div className="flex flex-wrap gap-3">
-              {imageURLs.map((url, idx) => (
-                <div key={idx} className="relative w-24 h-24 border rounded-md overflow-hidden">
-                  <img src={url} alt={`Field image ${idx + 1}`} className="w-full h-full object-cover" />
+            {selectedDate && (
+              <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto mb-4 border border-gray-200 rounded p-2">
+                {TIME_SLOTS.map((slot) => {
+                  const dateKey = formatDate(selectedDate);
+                  const isSelected = formData.availability[dateKey]?.includes(slot);
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => toggleTimeSlot(slot)}
+                      className={`py-2 px-3 rounded ${
+                        isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Images Upload */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">Upload Images (optional)</label>
+            <input type="file" accept="image/*" onChange={handleImageUpload} className="mb-4" />
+            <div className="flex flex-wrap gap-4">
+              {imageURLs.map((url, index) => (
+                <div key={index} className="relative w-24 h-24 rounded overflow-hidden shadow-md">
+                  <img src={url} alt={`Field image ${index + 1}`} className="object-cover w-full h-full" />
                   <button
                     type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-800"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-0 right-0 bg-red-600 text-white rounded-bl px-1.5 py-0.5 text-xs hover:bg-red-700"
                     aria-label="Remove image"
                   >
-                    &times;
+                    ×
                   </button>
                 </div>
               ))}
@@ -409,14 +478,12 @@ const AddField = () => {
           </div>
 
           {/* Submit Button */}
-          <div>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Add Field
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-blue-700 text-white font-bold rounded-md hover:bg-blue-800 transition"
+          >
+            Add Field
+          </button>
         </form>
       </div>
     </>
