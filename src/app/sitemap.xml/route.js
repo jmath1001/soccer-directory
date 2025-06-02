@@ -1,10 +1,10 @@
 import { getDocs, collection } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // adjust to your firebase config
+import { db } from '@/firebase/firebaseConfig'; // adjust to your firebase config
 
 export async function GET() {
   const snapshot = await getDocs(collection(db, 'rentalFields'));
 
-  const baseUrl = 'https://yourdomain.com'; // replace with your real domain
+  const baseUrl = 'https://soccer-directory.vercel.app'; // replace with your real domain
   const urls = snapshot.docs.map((doc) => {
     return `
       <url>
