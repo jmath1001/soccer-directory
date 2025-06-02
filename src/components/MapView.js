@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import { useRouter } from 'next/navigation';
@@ -42,6 +42,16 @@ const FlyToLocation = ({ position }) => {
 
 const MapView = ({ fields, selectedPosition }) => {
   const router = useRouter();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const checkMobile = () => setIsMobile(window.innerWidth < 768);
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, []);
 
   const validFields = fields.filter(
     (f) =>
@@ -67,7 +77,7 @@ const MapView = ({ fields, selectedPosition }) => {
       className="h-full w-full rounded-lg shadow"
     >
       <ResizeMap />
-      {isValidLatLng(selectedPosition) && (
+      {!isMobile && isValidLatLng(selectedPosition) && (
         <FlyToLocation position={selectedPosition} />
       )}
       <TileLayer
