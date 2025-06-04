@@ -22,7 +22,6 @@ const HeroSection = () => {
 
   return (
     <section className="relative h-[80vh] w-full overflow-hidden flex flex-col items-center justify-center">
-      {/* Background video */}
       <video
         autoPlay
         loop
@@ -34,10 +33,8 @@ const HeroSection = () => {
         Your browser does not support the video tag.
       </video>
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40 z-10" />
 
-      {/* Main Text Content */}
       <div className="relative z-20 text-center px-6 max-w-3xl flex-grow flex flex-col justify-center">
         <h1 className="text-white text-4xl md:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
           Find Your Perfect Soccer Field
@@ -46,7 +43,6 @@ const HeroSection = () => {
           Discover available fields and book your next game today!
         </p>
 
-        {/* City Search */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
           <input
             type="text"
@@ -64,7 +60,6 @@ const HeroSection = () => {
           </button>
         </div>
 
-        {/* Browse Button */}
         <button
           onClick={() => router.push('/browse')}
           className="bg-white text-blue-600 py-3 px-8 rounded-lg text-lg font-semibold shadow-lg hover:bg-blue-100 transition duration-300"
@@ -73,7 +68,6 @@ const HeroSection = () => {
         </button>
       </div>
 
-      {/* Animated arrow at bottom */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white cursor-pointer z-20">
         <span className="mb-1 font-semibold text-lg drop-shadow-md">Discover Fields</span>
         <svg
