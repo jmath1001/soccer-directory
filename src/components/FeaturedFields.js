@@ -51,7 +51,7 @@ const FeaturedFields = () => {
   return (
     <section className="py-16 px-6 bg-gray-50">
       <h2 className="text-3xl font-extrabold mb-8 text-center text-gray-900">
-        Top Fields in Dallas
+        Featured Fields
       </h2>
 
       <div className="max-w-7xl mx-auto relative">

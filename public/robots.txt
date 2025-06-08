@@ -1,4 +1,9 @@
+# *
 User-agent: *
 Allow: /
 
+# Host
+Host: https://soccer-directory.vercel.app
+
+# Sitemaps
 Sitemap: https://soccer-directory.vercel.app/sitemap.xml

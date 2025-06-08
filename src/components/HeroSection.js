@@ -49,7 +49,7 @@ const HeroSection = () => {
             value={cityInput}
             onChange={(e) => setCityInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Enter your city (e.g. Dallas)"
+            placeholder="Enter your city (e.g. OKC, Tulsa)"
             className="px-4 py-2 rounded-lg text-black text-lg w-72 max-w-full"
           />
           <button
