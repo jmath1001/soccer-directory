@@ -138,11 +138,10 @@ const FieldDetails = ({ params }) => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`capitalize px-4 py-1 text-sm rounded-t-lg font-medium transition ${
-                    activeTab === tab
+                  className={`capitalize px-4 py-1 text-sm rounded-t-lg font-medium transition ${activeTab === tab
                       ? 'bg-green-700 text-white'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
@@ -152,51 +151,51 @@ const FieldDetails = ({ params }) => {
             {/* Tab Content */}
             <div className="tab-content overflow-y-auto text-gray-300">
               {activeTab === 'overview' && (
-  <div className="space-y-6">
-    {/* Contact Info */}
-    <div className="bg-gray-700 border border-gray-600 rounded-xl p-4 shadow-sm">
-      <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+                <div className="space-y-6">
+                  {/* Contact Info */}
+                  <div className="bg-gray-700 border border-gray-600 rounded-xl p-4 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
 
-      <div className="flex items-center space-x-3 mb-2">
-        {/* Phone Icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 text-gray-300"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 5.25a2.25 2.25 0 012.25-2.25h2.25a.75.75 0 01.75.75v3a.75.75 0 01-.75.75H6a.75.75 0 01-.75-.75v-1.5a.75.75 0 00-.75-.75H3.75a.75.75 0 01-.75-.75v-.75zM8.25 7.5h7.5m-7.5 0v7.5m7.5-7.5v7.5m-4.5-4.5h4.5"
-          />
-        </svg>
-        <span className="text-gray-200">{field.contactPhone || 'No phone number provided'}</span>
-      </div>
+                    <div className="flex items-center space-x-3 mb-2">
+                      {/* Phone Icon */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 5.25a2.25 2.25 0 012.25-2.25h2.25a.75.75 0 01.75.75v3a.75.75 0 01-.75.75H6a.75.75 0 01-.75-.75v-1.5a.75.75 0 00-.75-.75H3.75a.75.75 0 01-.75-.75v-.75zM8.25 7.5h7.5m-7.5 0v7.5m7.5-7.5v7.5m-4.5-4.5h4.5"
+                        />
+                      </svg>
+                      <span className="text-gray-200">{field.contactPhone || 'No phone number provided'}</span>
+                    </div>
 
-      <div className="flex items-center space-x-3">
-        {/* Email Icon */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5 text-gray-300"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16 12l-4-4m0 0l-4 4m4-4v8"
-          />
-        </svg>
-        <span className="text-gray-200">{field.contactEmail || 'No email provided'}</span>
-      </div>
-    </div>
-  </div>
-)}
+                    <div className="flex items-center space-x-3">
+                      {/* Email Icon */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-gray-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M16 12l-4-4m0 0l-4 4m4-4v8"
+                        />
+                      </svg>
+                      <span className="text-gray-200">{field.contactEmail || 'No email provided'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
 
               {activeTab === 'availability' && (
@@ -230,17 +229,28 @@ const FieldDetails = ({ params }) => {
             </div>
 
             {/* Book Now Button */}
-          <button
-  onClick={() => router.push(`/booking/${id}`)}
-  className="mt-6 w-full py-3 border border-white bg-transparent text-white font-semibold rounded-none cursor-pointer transition-colors duration-300 ease-in-out hover:bg-white hover:text-gray-900"
-  style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", letterSpacing: '0.05em' }}
->
-  Book Now
-</button>
+            <button
+              onClick={() => router.push(`/booking/${id}`)}
+              className="mt-6 w-full py-3 border border-white bg-transparent text-white font-semibold rounded-none cursor-pointer transition-colors duration-300 ease-in-out hover:bg-white hover:text-gray-900"
+              style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", letterSpacing: '0.05em' }}
+            >
+              Book Now
+            </button>
 
 
 
           </div>
+          <div className="mb-6">
+    <p className="mb-2 text-yellow-400 font-semibold">
+      Are you the owner of this facility?
+    </p>
+    <button
+      onClick={() => router.push(`/claim-field/${id}`)}
+      className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg shadow-md transition"
+    >
+      Claim This Field
+    </button>
+  </div>
         </div>
       </div>
     </div>

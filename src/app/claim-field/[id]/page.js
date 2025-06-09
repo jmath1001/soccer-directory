@@ -49,8 +49,11 @@ export default function ClaimField() {
       <h1 className="text-4xl font-extrabold text-center text-green-700">
         Claim Your Field Listing
       </h1>
+      <p className="text-center text-gray-700 text-lg max-w-prose mx-auto">
+        Are you the owner of this facility? Claim your listing to gain full control. Once claimed, you can update all the information on this page and add pickup games, leagues, and more to keep your community engaged.
+      </p>
       <p className="text-center text-gray-600 text-lg">
-        Submit your details to start the process. Our team will contact you shortly to help claim your listing.
+        Submit your details below to start the process. Our team will contact you shortly to help verify your ownership and enable editing.
       </p>
 
       {submitted ? (
