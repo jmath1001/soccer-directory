@@ -32,8 +32,8 @@ export default async function Home() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Find Your Perfect Soccer Field | Soccer Discovery" />
         <meta property="og:description" content="Discover available soccer fields near you and book your next game easily. Indoor, outdoor, futsal & more!" />
-        <meta property="og:url" content="https://soccer-directory.vercel.app" />
-        <meta property="og:image" content="https://soccer-directory.vercel.app/public/images/hero-image.jpg" />
+        <meta property="og:url" content="https://soccerfieldrental.net" />
+        <meta property="og:image" content="https://soccerfieldrental.net/public/images/hero-image.jpg" />
 
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Find Your Perfect Soccer Field | Soccer Discovery" />
@@ -47,9 +47,9 @@ export default async function Home() {
               "@context": "https://schema.org",
               "@type": "SportsActivityLocation",
               name: "Soccer Discovery",
-              url: "https://soccer-directory.vercel.app",
+              url: "https://soccerfieldrental.net",
               description: "Discover available soccer fields near you and book your next game easily.",
-              image: "https://soccer-directory.vercel.app/public/images/hero-image.jpg",
+              image: "https://soccerfieldrental.net/public/images/hero-image.jpg",
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "United States",
