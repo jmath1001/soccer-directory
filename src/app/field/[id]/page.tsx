@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { createSupabasePublicClient } from '@/lib/supabaseServer';
 import type { Metadata } from 'next';
 import FieldDetailsClient from './FieldDetailsClient';
 
@@ -6,7 +6,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabasePublicClient();
   const { data: field } = await supabase
     .from('rental_fields')
     .select('facility_name, location, city, field_surface, indoor_outdoor, price_per_hour, image_urls')

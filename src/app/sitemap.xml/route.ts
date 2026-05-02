@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { createSupabasePublicClient } from '@/lib/supabaseServer';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -18,7 +18,7 @@ export async function GET() {
 
   let dynamicUrls: string[] = [];
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabasePublicClient();
     const { data, error } = await supabase.from('rental_fields').select('id');
     if (error) throw error;
     dynamicUrls = (data ?? []).map(

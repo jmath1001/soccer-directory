@@ -1,5 +1,18 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+
+/**
+ * Cookie-free Supabase client for public read-only server fetches.
+ * Use this in pages/routes that don't need auth (homepage, sitemap, etc.)
+ * so they can be statically rendered without triggering dynamic cookie usage.
+ */
+export function createSupabasePublicClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 /**
  * Creates a Supabase client for use in Server Components and API Route Handlers.

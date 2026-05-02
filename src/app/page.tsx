@@ -1,7 +1,7 @@
 import HeroSection from '@/components/HeroSection';
 import FeaturedFields from '@/components/FeaturedFields';
 import BrowseByCategory from '@/components/BrowseByCategory';
-import { createSupabaseServerClient } from '@/lib/supabaseServer';
+import { createSupabasePublicClient } from '@/lib/supabaseServer';
 import type { RentalField } from '@/types';
 import type { Metadata } from 'next';
 
@@ -43,7 +43,7 @@ export default async function Home() {
   let fields: RentalField[] = [];
 
   try {
-    const supabase = await createSupabaseServerClient();
+    const supabase = createSupabasePublicClient();
     const { data, error } = await supabase.from('rental_fields').select('*');
     if (error) throw error;
     fields = data ?? [];
